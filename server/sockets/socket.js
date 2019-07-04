@@ -23,21 +23,23 @@ io.on('connection', (client) => {
      usuarios.agregarPersona(client.id, data.nombre,data.sala );
     //emite a todas las personas de la misma sala que usuarios estan conectados
     client.broadcast.to(data.sala).emit('listaPersona',usuarios.getpersonasPorsala(data.sala));
-    
+    client.broadcast.to(data.sala).emit('crearMensaje',crearMensaje('Administrador',`${data.nombre} se unió`))
+
     
     callback(usuarios.getpersonasPorsala(data.sala))
 
     });
 
 
-    client.on('crearMensaje',(data)=>{
-        //mando el client.id que es el id del cliente
+    client.on('crearMensaje', (data, callback) => {
+
         let persona = usuarios.getpersona(client.id);
 
-        let mensaje = crearMensaje(persona.nombre,data.mensaje)
+        let mensaje = crearMensaje(persona.nombre, data.mensaje);
+        client.broadcast.to(persona.sala).emit('crearMensaje', mensaje);
 
-        client.broadcast.to(persona.data).emit('crearMensaje',mensaje);
-    })
+        callback(mensaje);
+    });
 
 
     client.on('disconnect',() =>{
